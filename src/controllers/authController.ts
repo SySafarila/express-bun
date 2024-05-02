@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
-import type { AuthRequest } from "../utils/customRequests";
+import type { AuthRequest } from "../types/customRequests";
+import { signJwt } from "../utils/jwt";
 
 export const login = (req: Request, res: Response) => {
   const { email, password, remember = false } = req.body;
@@ -21,9 +22,14 @@ export const login = (req: Request, res: Response) => {
   //
   // TODO: Login logic
 
+  const token: string = signJwt({
+    id: 1,
+    time: new Date().getTime(),
+  });
+
   res.json({
     message: "Login success",
-    token: "xxxxxxx",
+    token: token,
   });
 };
 

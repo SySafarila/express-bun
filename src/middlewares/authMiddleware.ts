@@ -1,5 +1,5 @@
 import type { NextFunction, Response } from "express";
-import type { AuthRequest } from "../utils/customRequests";
+import type { AuthRequest } from "../types/customRequests";
 
 const authMiddleware = (
   req: AuthRequest,

@@ -6,7 +6,7 @@ const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  let token: string | null | undefined = null;
+  let token: string | null = null;
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -17,6 +17,11 @@ const authMiddleware = (
 
   try {
     token = authorization?.split("Bearer ")[1];
+
+    // TODO: check token
+    //
+    //
+    // TODO: check token
   } catch (error) {
     token = null;
   }

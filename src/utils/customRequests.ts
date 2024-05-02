@@ -1,5 +1,5 @@
 import type { Request } from "express";
 
 export interface AuthRequest extends Request {
-  token: string;
+  token?: string;
 }

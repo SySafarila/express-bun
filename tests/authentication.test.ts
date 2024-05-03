@@ -1,3 +1,4 @@
+import { $ } from "bun";
 import { describe, expect, it } from "bun:test";
 import supertest from "supertest";
 import { app } from "../index";
@@ -7,6 +8,10 @@ const staticJwtToken =
 
 describe("Authentication", () => {
   it("register path return 200", async () => {
+    if (Bun.env.PRODUCTION === "false" && Bun.env.RESET_DATABASE_ON_TEST === "TRUE") {
+      await $`bunx prisma migrate reset -f`;
+    }
+
     const response = await supertest(app).post("/auth/register").send({
       full_name: "Syahrul Safarila",
       email: "sysafarila.official@gmail.com",

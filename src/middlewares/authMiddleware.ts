@@ -1,5 +1,6 @@
 import type { NextFunction, Response } from "express";
 import type { AuthRequest } from "../types/customRequests";
+import { verifyJwt } from "../utils/jwt";
 
 const authMiddleware = (
   req: AuthRequest,
@@ -17,13 +18,11 @@ const authMiddleware = (
 
   try {
     token = authorization?.split("Bearer ")[1];
-
-    // TODO: check token
-    //
-    //
-    // TODO: check token
+    verifyJwt(token);
   } catch (error) {
-    token = null;
+    return res.status(401).json({
+      message: "Bearer token invalid.",
+    });
   }
 
   if (typeof token != "string") {

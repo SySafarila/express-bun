@@ -33,12 +33,13 @@ export const login = async (req: Request, res: Response) => {
     }
     userId = user.id;
   } catch (error) {
-    if (error instanceof PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return res.status(400).json({
-          message: "Email not registered.",
-        });
-      }
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return res.status(400).json({
+        message: "Email not registered.",
+      });
     }
 
     return res.status(400).json({

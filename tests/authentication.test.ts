@@ -8,7 +8,7 @@ const staticJwtToken =
 
 describe("Authentication", () => {
   it("register path return 200", async () => {
-    if (Bun.env.PRODUCTION === "false" && Bun.env.RESET_DATABASE_ON_TEST === "TRUE") {
+    if (Bun.env.PRODUCTION === "false" && Bun.env.RESET_DATABASE_ON_TEST === "true") {
       await $`bunx prisma migrate reset -f`;
     }
 

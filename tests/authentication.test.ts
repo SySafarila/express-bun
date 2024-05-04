@@ -17,7 +17,7 @@ describe("Authentication", () => {
 
     const response = await supertest(app).post("/auth/register").send({
       full_name: "Syahrul Safarila",
-      email: "sysafarila.official@gmail.com",
+      email: "test@test.com",
       password: "password",
       password_confirmation: "password",
     });
@@ -28,7 +28,7 @@ describe("Authentication", () => {
   it("register path return 400", async () => {
     const response = await supertest(app).post("/auth/register").send({
       full_name: "Syahrul Safarila",
-      email: "sysafarila.official@gmail.com",
+      email: "test@test.com",
       password: "password",
     });
 
@@ -37,7 +37,7 @@ describe("Authentication", () => {
 
   it("login path return 200", async () => {
     const response = await supertest(app).post("/auth/login").send({
-      email: "sysafarila.official@gmail.com",
+      email: "test@test.com",
       password: "password",
     });
     testToken = response.body.token;
@@ -47,10 +47,10 @@ describe("Authentication", () => {
 
   it("login path return 400", async () => {
     const response = await supertest(app).post("/auth/login").send({
-      email: "sysafarila.official@gmail.com",
+      email: "test@test.com",
     });
     const response2 = await supertest(app).post("/auth/login").send({
-      email: "sysafarila.official@gmail.com",
+      email: "test@test.com",
       password: "another password",
     });
 

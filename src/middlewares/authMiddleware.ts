@@ -1,4 +1,9 @@
 import type { NextFunction, Response } from "express";
+import {
+  JsonWebTokenError,
+  NotBeforeError,
+  TokenExpiredError,
+} from "jsonwebtoken";
 import type { AuthRequest } from "../types/customRequests";
 import { verifyJwt } from "../utils/jwt";
 
@@ -7,7 +12,7 @@ const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  let token: string | null = null;
+  let token: string;
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -20,14 +25,20 @@ const authMiddleware = (
     token = authorization?.split("Bearer ")[1];
     verifyJwt(token);
   } catch (error) {
-    return res.status(401).json({
-      message: "Bearer token invalid.",
-    });
-  }
+    let message: string = "Bearer token invalid.";
 
-  if (typeof token != "string") {
+    if (error instanceof JsonWebTokenError) {
+      message = error.message;
+    }
+    if (error instanceof TokenExpiredError) {
+      message = error.message;
+    }
+    if (error instanceof NotBeforeError) {
+      message = error.message;
+    }
+
     return res.status(401).json({
-      message: "Bearer token required.",
+      message: message,
     });
   }
 

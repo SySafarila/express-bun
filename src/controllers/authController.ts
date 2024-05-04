@@ -4,6 +4,7 @@ import type { AuthRequest } from "../types/customRequests";
 import type { User } from "../types/models";
 import DB from "../utils/database";
 import { signJwt } from "../utils/jwt";
+import randomizer from "../utils/randomizer";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password, remember = false } = req.body;
@@ -47,7 +48,7 @@ export const login = async (req: Request, res: Response) => {
 
   const token: string = signJwt({
     id: userId,
-    time: new Date().getTime(),
+    randomizer: randomizer(5),
   });
 
   res.json({

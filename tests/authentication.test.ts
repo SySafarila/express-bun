@@ -8,7 +8,10 @@ const staticJwtToken =
 
 describe("Authentication", () => {
   it("register path return 200", async () => {
-    if (Bun.env.PRODUCTION === "false" && Bun.env.RESET_DATABASE_ON_TEST === "true") {
+    if (
+      Bun.env.PRODUCTION === "false" &&
+      Bun.env.RESET_DATABASE_ON_TEST === "true"
+    ) {
       await $`bunx prisma migrate reset -f`;
     }
 
@@ -45,8 +48,13 @@ describe("Authentication", () => {
     const response = await supertest(app).post("/auth/login").send({
       email: "sysafarila.official@gmail.com",
     });
+    const response2 = await supertest(app).post("/auth/login").send({
+      email: "sysafarila.official@gmail.com",
+      password: "another password",
+    });
 
     expect(response.status).toBe(400);
+    expect(response2.status).toBe(400);
   });
 
   it("logout path return 200", async () => {
@@ -61,7 +69,9 @@ describe("Authentication", () => {
     const response = await supertest(app)
       .post("/auth/logout")
       .set("Authorization", `Bearer another token`);
+    const response2 = await supertest(app).post("/auth/logout");
 
     expect(response.status).toBe(401);
+    expect(response2.status).toBe(401);
   });
 });

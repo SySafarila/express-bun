@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 import supertest from "supertest";
 import { app } from "../index";
 
-const staticJwtToken =
+let testToken =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTE2MjM5MDIyfQ.wWIr5eSkGvY44wLb5JEs10CxPBnqWp4F1ns7zh8Qpes";
 
 describe("Authentication", () => {
@@ -40,6 +40,7 @@ describe("Authentication", () => {
       email: "sysafarila.official@gmail.com",
       password: "password",
     });
+    testToken = response.body.token;
 
     expect(response.status).toBe(200);
   });
@@ -60,7 +61,7 @@ describe("Authentication", () => {
   it("logout path return 200", async () => {
     const response = await supertest(app)
       .post("/auth/logout")
-      .set("Authorization", `Bearer ${staticJwtToken}`);
+      .set("Authorization", `Bearer ${testToken}`);
 
     expect(response.status).toBe(200);
   });

@@ -5,14 +5,17 @@ import {
   TokenExpiredError,
 } from "jsonwebtoken";
 import type { AuthRequest } from "../types/customRequests";
+import type { JwtPayloadType } from "../types/jwtPayload";
+import DB from "../utils/database";
 import { verifyJwt } from "../utils/jwt";
 
-const authMiddleware = (
+const authMiddleware = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ) => {
   let token: string;
+  let tokenId: number;
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -23,7 +26,15 @@ const authMiddleware = (
 
   try {
     token = authorization?.split("Bearer ")[1];
-    verifyJwt(token);
+    const payload = verifyJwt(token) as JwtPayloadType;
+    tokenId = payload.token_id;
+
+    await DB.token.findFirstOrThrow({
+      where: {
+        id: payload.token_id,
+        is_blacklist: false,
+      },
+    });
   } catch (error) {
     let message: string = "Bearer token invalid.";
 
@@ -43,6 +54,7 @@ const authMiddleware = (
   }
 
   req.token = token;
+  req.tokenId = tokenId;
 
   next();
 };

@@ -120,13 +120,23 @@ export const register = async (req: Request, res: Response) => {
   });
 };
 
-export const logout = (req: AuthRequest, res: Response) => {
-  const { token } = req;
+export const logout = async (req: AuthRequest, res: Response) => {
+  const { token, tokenId } = req;
 
-  // TODO: logout logic
-  //
-  //
-  // TODO: logout logic
+  try {
+    await DB.token.update({
+      where: {
+        id: tokenId,
+      },
+      data: {
+        is_blacklist: true,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Cannot blacklist current token",
+    });
+  }
 
   res.json({
     message: "Logout success.",

@@ -13,9 +13,9 @@ export const signJwt = (payload: JwtPayloadType): string => {
   return token;
 };
 
-export const verifyJwt = (token: string) => {
+export const verifyJwt = (token: string): JwtPayload | string => {
   try {
-    const decoded: string | JwtPayload = jwt.verify(token, secretKey);
+    const decoded: JwtPayload | string = jwt.verify(token, secretKey);
     return decoded;
   } catch (error) {
     if (error instanceof JsonWebTokenError) {

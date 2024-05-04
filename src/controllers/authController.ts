@@ -8,6 +8,8 @@ import randomizer from "../utils/randomizer";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password, remember = false } = req.body;
+  let userId: number;
+  let tokenId: number;
 
   if (!email || !password) {
     return res.status(400).json({
@@ -20,7 +22,7 @@ export const login = async (req: Request, res: Response) => {
       message: "Remember must be boolean.",
     });
   }
-  let userId: number;
+
   try {
     const user = await DB.user.findFirstOrThrow({
       where: {
@@ -47,9 +49,25 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 
+  const randomizerValue: string = randomizer(5);
+  try {
+    const saveToken = await DB.token.create({
+      data: {
+        randomizer: randomizerValue,
+        user_id: userId,
+      },
+    });
+    tokenId = saveToken.id;
+  } catch (error) {
+    return res.status(500).json({
+      message: "Cannot save token to database",
+    });
+  }
+
   const token: string = signJwt({
-    id: userId,
-    randomizer: randomizer(5),
+    user_id: userId,
+    randomizer: randomizerValue,
+    token_id: tokenId,
   });
 
   res.json({

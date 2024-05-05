@@ -4,6 +4,8 @@ CREATE TABLE `token` (
     `user_id` INTEGER NOT NULL,
     `randomizer` VARCHAR(5) NOT NULL,
     `is_blacklist` BOOLEAN NOT NULL DEFAULT false,
+    `ip` VARCHAR(45) NULL,
+    `user_agent` TEXT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 

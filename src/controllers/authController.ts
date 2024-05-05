@@ -55,6 +55,8 @@ export const login = async (req: Request, res: Response) => {
       data: {
         randomizer: randomizerValue,
         user_id: userId,
+        ip: req.ip ?? null,
+        user_agent: req.headers["user-agent"] ?? null,
       },
     });
     tokenId = saveToken.id;

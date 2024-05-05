@@ -58,6 +58,22 @@ describe("Authentication", () => {
     expect(response2.status).toBe(400);
   });
 
+  it("me path return 200", async () => {
+    const response = await supertest(app)
+      .get("/auth/me")
+      .set("Authorization", `Bearer ${testToken}`);
+
+    expect(response.status).toBe(200);
+  });
+
+  it("me path return 401", async () => {
+    const response = await supertest(app)
+      .get("/auth/me")
+      .set("Authorization", `Bearer another token`);
+
+    expect(response.status).toBe(401);
+  });
+
   it("logout path return 200", async () => {
     const response = await supertest(app)
       .post("/auth/logout")

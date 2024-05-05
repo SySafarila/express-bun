@@ -1,7 +1,7 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { Request, Response } from "express";
 import type { AuthRequest } from "../types/customRequests";
-import type { User } from "../types/models";
+import type { User, UserPublic } from "../types/models";
 import DB from "../utils/database";
 import { signJwt } from "../utils/jwt";
 import randomizer from "../utils/randomizer";
@@ -142,5 +142,44 @@ export const logout = async (req: AuthRequest, res: Response) => {
 
   res.json({
     message: "Logout success.",
+  });
+};
+
+export const me = async (req: AuthRequest, res: Response) => {
+  const { tokenId } = req;
+  let user: UserPublic;
+
+  try {
+    const check = await DB.token.findFirstOrThrow({
+      where: {
+        id: tokenId,
+      },
+      include: {
+        user: true,
+      },
+    });
+    user = {
+      email: check.user.email,
+      full_name: check.user.full_name,
+      verified_at: check.user.verified_at,
+    };
+  } catch (error) {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return res.status(500).json({
+        message: "Token not found.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Unable to find your token",
+    });
+  }
+
+  res.json({
+    message: "Success get current user.",
+    user: user,
   });
 };

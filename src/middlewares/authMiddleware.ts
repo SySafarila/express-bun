@@ -29,6 +29,7 @@ const authMiddleware = async (
     const payload = verifyJwt(token) as JwtPayloadType;
     tokenId = payload.token_id;
 
+    // find and check token on database
     await DB.token.findFirstOrThrow({
       where: {
         id: payload.token_id,

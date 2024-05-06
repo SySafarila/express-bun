@@ -11,49 +11,36 @@ import { validateLogin, validateRegister } from "../validators/authentication";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password, remember } = req.body as LoginRequest;
-  let userId: number;
-  let tokenId: number;
+  let userId, tokenId: number;
+  let token: string;
+
+  // generate random string
+  const randomizerValue: string = randomizer(5);
 
   try {
+    // validate
     await validateLogin({
       email,
       password,
       remember,
     });
 
+    // check user email
     const user = await DB.user.findFirstOrThrow({
       where: {
         email: email,
       },
     });
 
+    // check user password
     if (!Bun.password.verifySync(password, user.password)) {
       throw new Error("Credentials not match");
     }
+
+    // set user ID
     userId = user.id;
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(400).json({
-        message: error.message,
-      });
-    }
 
-    if (
-      error instanceof PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      return res.status(400).json({
-        message: "Email not registered.",
-      });
-    }
-
-    return res.status(400).json({
-      message: "Credentials not match",
-    });
-  }
-
-  const randomizerValue: string = randomizer(5);
-  try {
+    // save token to database
     const saveToken = await DB.token.create({
       data: {
         randomizer: randomizerValue,
@@ -62,18 +49,42 @@ export const login = async (req: Request, res: Response) => {
         user_agent: req.headers["user-agent"] ?? null,
       },
     });
+
+    // set token ID
     tokenId = saveToken.id;
+
+    token = signJwt({
+      user_id: userId,
+      randomizer: randomizerValue,
+      token_id: tokenId,
+    });
+    await DB.$disconnect();
   } catch (error) {
-    return res.status(500).json({
-      message: "Cannot save token to database",
+    // error validation
+    if (error instanceof ValidationError) {
+      return res.status(400).json({
+        message: error.message,
+      });
+    }
+
+    // error database
+    if (error instanceof PrismaClientKnownRequestError) {
+      await DB.$disconnect();
+      if (error.code === "P2025") {
+        return res.status(400).json({
+          message: "Email not registered.",
+        });
+      }
+      return res.status(500).json({
+        message: error.message,
+      });
+    }
+
+    // password or email not match
+    return res.status(400).json({
+      message: "Credentials not match",
     });
   }
-
-  const token: string = signJwt({
-    user_id: userId,
-    randomizer: randomizerValue,
-    token_id: tokenId,
-  });
 
   res.json({
     message: "Login success",
@@ -86,6 +97,7 @@ export const register = async (req: Request, res: Response) => {
     req.body as RegisterRequest;
 
   try {
+    // validate
     await validateRegister({
       email,
       password,
@@ -93,13 +105,17 @@ export const register = async (req: Request, res: Response) => {
       full_name,
     });
 
+    // hash password
     const password_hash = await Bun.password.hash(password);
+
+    // prepare user's data to save to database
     const user: User = {
       email: email,
       full_name: full_name,
       password: password_hash,
     };
 
+    // save to database
     await DB.user.create({
       data: user,
     });
@@ -108,12 +124,14 @@ export const register = async (req: Request, res: Response) => {
   } catch (error) {
     await DB.$disconnect();
 
+    // validation error
     if (error instanceof ValidationError) {
       return res.status(400).json({
         message: error.message,
       });
     }
 
+    // database error
     if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
         return res.status(400).json({
@@ -122,6 +140,7 @@ export const register = async (req: Request, res: Response) => {
       }
     }
 
+    // bad request
     return res.status(400).json({
       message: "Request invalid.",
     });
@@ -136,6 +155,7 @@ export const logout = async (req: Request, res: AuthRespnose) => {
   const { tokenId } = res.locals;
 
   try {
+    // blacklist token
     await DB.token.update({
       where: {
         id: tokenId,
@@ -144,7 +164,10 @@ export const logout = async (req: Request, res: AuthRespnose) => {
         is_blacklist: true,
       },
     });
+
+    DB.$disconnect();
   } catch (error) {
+    DB.$disconnect();
     return res.status(500).json({
       message: "Cannot blacklist current token",
     });
@@ -161,6 +184,7 @@ export const me = async (req: Request, res: AuthRespnose) => {
   let user: UserPublic;
 
   try {
+    // check token
     const check = await DB.token.findFirstOrThrow({
       where: {
         id: tokenId,
@@ -174,7 +198,11 @@ export const me = async (req: Request, res: AuthRespnose) => {
       full_name: check.user.full_name,
       verified_at: check.user.verified_at,
     };
+    DB.$disconnect();
   } catch (error) {
+    DB.$disconnect();
+
+    // database error
     if (
       error instanceof PrismaClientKnownRequestError &&
       error.code === "P2025"

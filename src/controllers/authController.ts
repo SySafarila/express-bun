@@ -1,29 +1,29 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { Request, Response } from "express";
-import type { AuthRequest } from "../types/customRequests";
+import { ValidationError } from "joi";
+import type {
+  AuthRequest,
+  LoginRequest,
+  RegisterRequest,
+} from "../types/customRequests";
 import type { User, UserPublic } from "../types/models";
 import DB from "../utils/database";
 import { signJwt } from "../utils/jwt";
 import randomizer from "../utils/randomizer";
+import { validateLogin, validateRegister } from "../validators/authentication";
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password, remember = false } = req.body;
+  const { email, password, remember } = req.body as LoginRequest;
   let userId: number;
   let tokenId: number;
 
-  if (!email || !password) {
-    return res.status(400).json({
-      message: "Email and Password are required.",
-    });
-  }
-
-  if (remember && typeof remember != "boolean") {
-    return res.status(400).json({
-      message: "Remember must be boolean.",
-    });
-  }
-
   try {
+    await validateLogin({
+      email,
+      password,
+      remember,
+    });
+
     const user = await DB.user.findFirstOrThrow({
       where: {
         email: email,
@@ -35,6 +35,12 @@ export const login = async (req: Request, res: Response) => {
     }
     userId = user.id;
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json({
+        message: error.message,
+      });
+    }
+
     if (
       error instanceof PrismaClientKnownRequestError &&
       error.code === "P2025"
@@ -79,23 +85,24 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const register = async (req: Request, res: Response) => {
-  const { email, password, password_confirmation, full_name } = req.body;
-
-  if (!email || !password || !password_confirmation || !full_name) {
-    return res.status(400).json({
-      message:
-        "Email, Password, Password Confirmation, and Full Name are required.",
-    });
-  }
-
-  const password_hash = await Bun.password.hash(password);
-  const user: User = {
-    email: email,
-    full_name: full_name,
-    password: password_hash,
-  };
+  const { email, password, password_confirmation, full_name } =
+    req.body as RegisterRequest;
 
   try {
+    await validateRegister({
+      email,
+      password,
+      password_confirmation,
+      full_name,
+    });
+
+    const password_hash = await Bun.password.hash(password);
+    const user: User = {
+      email: email,
+      full_name: full_name,
+      password: password_hash,
+    };
+
     await DB.user.create({
       data: user,
     });
@@ -103,6 +110,12 @@ export const register = async (req: Request, res: Response) => {
     await DB.$disconnect();
   } catch (error) {
     await DB.$disconnect();
+
+    if (error instanceof ValidationError) {
+      return res.status(400).json({
+        message: error.message,
+      });
+    }
 
     if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2002") {

@@ -16,6 +16,7 @@ const authMiddleware = async (
 ) => {
   let token: string;
   let tokenId: number;
+  const clientIp = req.ip;
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -30,12 +31,22 @@ const authMiddleware = async (
     tokenId = payload.token_id;
 
     // find and check token on database
-    await DB.token.findFirstOrThrow({
+    const check = await DB.token.findFirstOrThrow({
       where: {
         id: payload.token_id,
         is_blacklist: false,
       },
     });
+    if (!check.ip) {
+      await DB.token.update({
+        where: {
+          id: tokenId,
+        },
+        data: {
+          ip: clientIp,
+        },
+      });
+    }
   } catch (error) {
     let message: string = "Bearer token invalid.";
 
@@ -56,6 +67,7 @@ const authMiddleware = async (
 
   req.token = token;
   req.tokenId = tokenId;
+  req.clientIp = clientIp;
 
   next();
 };

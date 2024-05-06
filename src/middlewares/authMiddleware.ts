@@ -1,17 +1,17 @@
-import type { NextFunction, Response } from "express";
+import type { NextFunction, Request } from "express";
 import {
   JsonWebTokenError,
   NotBeforeError,
   TokenExpiredError,
 } from "jsonwebtoken";
-import type { AuthRequest } from "../types/customRequests";
+import type { AuthRespnose } from "../types/customResponses";
 import type { JwtPayloadType } from "../types/jwtPayload";
 import DB from "../utils/database";
 import { verifyJwt } from "../utils/jwt";
 
 const authMiddleware = async (
-  req: AuthRequest,
-  res: Response,
+  req: Request,
+  res: AuthRespnose,
   next: NextFunction
 ) => {
   let token: string;
@@ -65,9 +65,7 @@ const authMiddleware = async (
     });
   }
 
-  req.token = token;
-  req.tokenId = tokenId;
-  req.clientIp = clientIp;
+  res.locals.tokenId = tokenId;
 
   next();
 };

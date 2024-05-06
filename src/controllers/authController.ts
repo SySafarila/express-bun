@@ -1,11 +1,8 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { Request, Response } from "express";
 import { ValidationError } from "joi";
-import type {
-  AuthRequest,
-  LoginRequest,
-  RegisterRequest,
-} from "../types/customRequests";
+import type { LoginRequest, RegisterRequest } from "../types/customRequests";
+import type { AuthRespnose } from "../types/customResponses";
 import type { User, UserPublic } from "../types/models";
 import DB from "../utils/database";
 import { signJwt } from "../utils/jwt";
@@ -135,8 +132,8 @@ export const register = async (req: Request, res: Response) => {
   });
 };
 
-export const logout = async (req: AuthRequest, res: Response) => {
-  const { token, tokenId } = req;
+export const logout = async (req: Request, res: AuthRespnose) => {
+  const { tokenId } = res.locals;
 
   try {
     await DB.token.update({
@@ -158,8 +155,9 @@ export const logout = async (req: AuthRequest, res: Response) => {
   });
 };
 
-export const me = async (req: AuthRequest, res: Response) => {
-  const { tokenId } = req;
+export const me = async (req: Request, res: AuthRespnose) => {
+  const { tokenId } = res.locals;
+
   let user: UserPublic;
 
   try {

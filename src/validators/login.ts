@@ -1,4 +1,8 @@
-import Joi, { type ValidationOptions, ValidationError } from "joi";
+import Joi, {
+  ValidationError,
+  type AsyncValidationOptions,
+  type ValidationOptions,
+} from "joi";
 import type { LoginRequest } from "../types/customRequests";
 
 const schema = Joi.object({
@@ -7,19 +11,17 @@ const schema = Joi.object({
   remember: Joi.boolean(),
 });
 const options: ValidationOptions = {
-  errors: {
-    wrap: {
-      label: "",
-    },
-  },
   abortEarly: false,
 };
 
 export const validateLogin = async (
   values: LoginRequest
-): Promise<Joi.AsyncValidationOptions | ValidationError> => {
+): Promise<AsyncValidationOptions | ValidationError> => {
   try {
-    const validate = await schema.validateAsync(values, options);
+    const validate: AsyncValidationOptions = await schema.validateAsync(
+      values,
+      options
+    );
     return validate;
   } catch (error) {
     if (error instanceof ValidationError) {

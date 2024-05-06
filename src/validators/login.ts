@@ -16,7 +16,7 @@ const options: ValidationOptions = {
 
 export const validateLogin = async (
   values: LoginRequest
-): Promise<AsyncValidationOptions | ValidationError> => {
+): Promise<AsyncValidationOptions> => {
   try {
     const validate: AsyncValidationOptions = await schema.validateAsync(
       values,

@@ -17,7 +17,7 @@ const options: ValidationOptions = {
 
 export const validateRegister = async (
   values: RegisterRequest
-): Promise<AsyncValidationOptions | ValidationError> => {
+): Promise<AsyncValidationOptions> => {
   try {
     const validate: AsyncValidationOptions = await schema.validateAsync(
       values,

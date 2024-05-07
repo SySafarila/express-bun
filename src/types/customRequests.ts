@@ -10,3 +10,7 @@ export type LoginRequest = {
   password: string;
   remember?: boolean;
 };
+
+export type RoleStore = {
+  name: string;
+};

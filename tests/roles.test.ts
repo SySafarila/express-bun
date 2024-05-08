@@ -32,4 +32,27 @@ describe("Roles", () => {
 
     expect(response400.status).toBe(400);
   });
+
+  it("role update return 200", async () => {
+    const response200 = await supertest(app)
+      .patch("/admin/roles")
+      .send({
+        name: "super admin update",
+        id: 1,
+      })
+      .set("Authorization", `Bearer ${testToken}`);
+
+    expect(response200.status).toBe(200);
+  });
+
+  it("role delete return 200", async () => {
+    const response200 = await supertest(app)
+      .delete("/admin/roles")
+      .send({
+        id: 1,
+      })
+      .set("Authorization", `Bearer ${testToken}`);
+
+    expect(response200.status).toBe(200);
+  });
 });

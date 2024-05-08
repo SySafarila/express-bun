@@ -14,3 +14,12 @@ export type LoginRequest = {
 export type RoleStore = {
   name: string;
 };
+
+export type RoleUpdate = {
+  id: number;
+  name: string;
+};
+
+export type RoleDelete = {
+  id: number;
+};

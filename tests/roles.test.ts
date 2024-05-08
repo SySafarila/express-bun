@@ -33,6 +33,14 @@ describe("Roles", () => {
     expect(response400.status).toBe(400);
   });
 
+  it("role read return 200", async () => {
+    const response200 = await supertest(app)
+      .get("/admin/roles")
+      .set("Authorization", `Bearer ${testToken}`);
+
+    expect(response200.status).toBe(200);
+  });
+
   it("role update return 200", async () => {
     const response200 = await supertest(app)
       .patch("/admin/roles")

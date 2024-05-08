@@ -1,9 +1,15 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { Request, Response } from "express";
 import { ValidationError } from "joi";
+import { store as tokenStore, update as tokenUpdate } from "../models/token";
+import {
+  getCurrentUser,
+  findFirstOrThrow,
+  store as userStore,
+} from "../models/user";
 import type { LoginRequest, RegisterRequest } from "../types/customRequests";
 import type { AuthRespnose } from "../types/customResponses";
-import type { User, UserPublic } from "../types/models";
+import type { UserPublic } from "../types/models";
 import DB from "../utils/database";
 import { signJwt } from "../utils/jwt";
 import randomizer from "../utils/randomizer";
@@ -11,7 +17,7 @@ import { validateLogin, validateRegister } from "../validators/authentication";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password, remember } = req.body as LoginRequest;
-  let userId, tokenId: number;
+
   let token: string;
 
   // generate random string
@@ -26,37 +32,25 @@ export const login = async (req: Request, res: Response) => {
     });
 
     // check user email
-    const user = await DB.user.findFirstOrThrow({
-      where: {
-        email: email,
-      },
-    });
+    const user = await findFirstOrThrow({ email: email });
 
     // check user password
     if (!Bun.password.verifySync(password, user.password)) {
       throw new Error("Credentials not match");
     }
 
-    // set user ID
-    userId = user.id;
-
     // save token to database
-    const saveToken = await DB.token.create({
-      data: {
-        randomizer: randomizerValue,
-        user_id: userId,
-        ip: req.ip ?? null,
-        user_agent: req.headers["user-agent"] ?? null,
-      },
+    const saveToken = await tokenStore({
+      randomizer: randomizerValue,
+      user_id: user.id,
+      ip: req.ip ?? null,
+      user_agent: req.headers["user-agent"] ?? null,
     });
 
-    // set token ID
-    tokenId = saveToken.id;
-
     token = signJwt({
-      user_id: userId,
+      user_id: user.id,
       randomizer: randomizerValue,
-      token_id: tokenId,
+      token_id: saveToken.id,
     });
     await DB.$disconnect();
   } catch (error) {
@@ -106,18 +100,13 @@ export const register = async (req: Request, res: Response) => {
     });
 
     // hash password
-    const password_hash = await Bun.password.hash(password);
+    const password_hash: string = await Bun.password.hash(password);
 
-    // prepare user's data to save to database
-    const user: User = {
+    // save to database
+    await userStore({
       email: email,
       full_name: full_name,
       password: password_hash,
-    };
-
-    // save to database
-    await DB.user.create({
-      data: user,
     });
 
     await DB.$disconnect();
@@ -155,15 +144,7 @@ export const logout = async (req: Request, res: AuthRespnose) => {
   const { tokenId } = res.locals;
 
   try {
-    // blacklist token
-    await DB.token.update({
-      where: {
-        id: tokenId,
-      },
-      data: {
-        is_blacklist: true,
-      },
-    });
+    await tokenUpdate({ is_blacklist: true }, tokenId!);
 
     DB.$disconnect();
   } catch (error) {
@@ -184,20 +165,9 @@ export const me = async (req: Request, res: AuthRespnose) => {
   let user: UserPublic;
 
   try {
-    // check token
-    const check = await DB.token.findFirstOrThrow({
-      where: {
-        id: tokenId,
-      },
-      include: {
-        user: true,
-      },
-    });
-    user = {
-      email: check.user.email,
-      full_name: check.user.full_name,
-      verified_at: check.user.verified_at,
-    };
+    // get current user
+    user = await getCurrentUser(tokenId!);
+
     DB.$disconnect();
   } catch (error) {
     DB.$disconnect();

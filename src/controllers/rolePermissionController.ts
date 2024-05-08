@@ -1,6 +1,7 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { Request, Response } from "express";
 import { ValidationError } from "joi";
+import { store } from "../models/role";
 import type { RoleStore } from "../types/customRequests";
 import DB from "../utils/database";
 import { validateRoleRequest } from "../validators/role";
@@ -10,11 +11,7 @@ export const roleStore = async (req: Request, res: Response) => {
 
   try {
     await validateRoleRequest({ name: name });
-    await DB.role.create({
-      data: {
-        name: name,
-      },
-    });
+    await store({ name: name });
 
     DB.$disconnect();
     res.json({

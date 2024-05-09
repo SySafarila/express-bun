@@ -1,5 +1,5 @@
 export type JwtPayloadType = {
-  user_id: string | number;
+  user_id: number;
   token_id: number;
   randomizer: string;
 };

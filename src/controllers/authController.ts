@@ -160,7 +160,7 @@ export const logout = async (req: Request, res: AuthRespnose) => {
 };
 
 export const me = async (req: Request, res: AuthRespnose) => {
-  const { tokenId } = res.locals;
+  const { tokenId, permissions, roles } = res.locals;
 
   let user: UserPublic;
 
@@ -190,5 +190,7 @@ export const me = async (req: Request, res: AuthRespnose) => {
   res.json({
     message: "Success get current user.",
     user: user,
+    roles,
+    permissions,
   });
 };

@@ -5,5 +5,7 @@ export interface AuthRespnose extends Response {
     token?: string;
     tokenId?: number;
     clientIp?: string;
+    permissions: Array<string>;
+    roles: Array<string>;
   };
 }

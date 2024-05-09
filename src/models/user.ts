@@ -22,8 +22,54 @@ export const getCurrentUser = async (tokenId: number): Promise<UserPublic> => {
       id: tokenId,
     },
     include: {
-      user: true,
+      user: {
+        select: {
+          full_name: true,
+          email: true,
+          verified_at: true,
+        },
+      },
     },
   });
   return token.user;
+};
+
+export const getRolesAndPermissions = async (
+  user_id: number
+): Promise<{ roles: Array<string>; permissions: Array<string> }> => {
+  let roles: Array<string> = [];
+  let permissions: Array<string> = [];
+
+  const rolesAndPermissions = await DB.user.findFirstOrThrow({
+    where: {
+      id: user_id,
+    },
+    include: {
+      roles: {
+        include: {
+          role: {
+            include: {
+              permissions: {
+                include: {
+                  permission: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  rolesAndPermissions.roles.forEach((role) => {
+    roles.push(role.role.name);
+    role.role.permissions.forEach((permission) => {
+      permissions.push(permission.permission.name);
+    });
+  });
+
+  return {
+    roles,
+    permissions,
+  };
 };

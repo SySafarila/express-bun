@@ -4,6 +4,7 @@ import {
   NotBeforeError,
   TokenExpiredError,
 } from "jsonwebtoken";
+import { getRolesAndPermissions } from "../models/user";
 import type { AuthRespnose } from "../types/customResponses";
 import type { JwtPayloadType } from "../types/jwtPayload";
 import DB from "../utils/database";
@@ -16,6 +17,8 @@ const authMiddleware = async (
 ) => {
   let token: string;
   let tokenId: number;
+  let permissions: Array<string> = [];
+  let roles: Array<string> = [];
   const clientIp = req.ip;
   const { authorization } = req.headers;
 
@@ -29,6 +32,10 @@ const authMiddleware = async (
     token = authorization?.split("Bearer ")[1];
     const payload = verifyJwt(token) as JwtPayloadType;
     tokenId = payload.token_id;
+
+    const rolesAndPermissions = await getRolesAndPermissions(payload.user_id);
+    permissions = rolesAndPermissions.permissions;
+    roles = rolesAndPermissions.roles;
 
     // find and check token on database
     const check = await DB.token.findFirstOrThrow({
@@ -66,6 +73,8 @@ const authMiddleware = async (
   }
 
   res.locals.tokenId = tokenId;
+  res.locals.permissions = permissions;
+  res.locals.roles = roles;
 
   next();
 };

@@ -8,7 +8,7 @@ let testToken =
 describe("Roles", () => {
   it("role store return 200", async () => {
     const responseLogin = await supertest(app).post("/auth/login").send({
-      email: "test@test.com",
+      email: "super.admin@admin.com",
       password: "password",
     });
     testToken = responseLogin.body.token;
@@ -18,7 +18,7 @@ describe("Roles", () => {
     const response200 = await supertest(app)
       .post("/admin/roles")
       .send({
-        name: "super admin",
+        name: "super admin test",
       })
       .set("Authorization", `Bearer ${testToken}`);
 
@@ -26,7 +26,7 @@ describe("Roles", () => {
     const response400 = await supertest(app)
       .post("/admin/roles")
       .send({
-        name: "super admin",
+        name: "super admin test",
       })
       .set("Authorization", `Bearer ${testToken}`);
 
@@ -45,7 +45,7 @@ describe("Roles", () => {
     const response200 = await supertest(app)
       .patch("/admin/roles")
       .send({
-        name: "super admin update",
+        name: "super admin test update",
         id: 1,
       })
       .set("Authorization", `Bearer ${testToken}`);

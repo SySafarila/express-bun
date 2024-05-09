@@ -10,13 +10,22 @@ export const store = async (
 };
 
 export const update = async (
-  values: Prisma.TokenUpdateInput,
-  tokenId: number
+  tokenId: number,
+  values: Prisma.TokenUpdateInput
 ): Promise<Token> => {
   return await DB.token.update({
     where: {
       id: tokenId,
     },
     data: values,
+  });
+};
+
+export const findFirstOrThrow = async (token_id: number): Promise<Token> => {
+  return await DB.token.findFirstOrThrow({
+    where: {
+      id: token_id,
+      is_blacklist: false,
+    },
   });
 };

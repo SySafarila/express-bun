@@ -144,7 +144,7 @@ export const logout = async (req: Request, res: AuthRespnose) => {
   const { tokenId } = res.locals;
 
   try {
-    await tokenUpdate({ is_blacklist: true }, tokenId!);
+    await tokenUpdate(tokenId!, { is_blacklist: true });
 
     DB.$disconnect();
   } catch (error) {

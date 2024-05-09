@@ -7,8 +7,8 @@ import {
 import { getRolesAndPermissions } from "../models/user";
 import type { AuthRespnose } from "../types/customResponses";
 import type { JwtPayloadType } from "../types/jwtPayload";
-import DB from "../utils/database";
 import { verifyJwt } from "../utils/jwt";
+import { findFirstOrThrow, update } from "../models/token";
 
 const authMiddleware = async (
   req: Request,
@@ -33,25 +33,16 @@ const authMiddleware = async (
     const payload = verifyJwt(token) as JwtPayloadType;
     tokenId = payload.token_id;
 
+    // get roles and permissions
     const rolesAndPermissions = await getRolesAndPermissions(payload.user_id);
     permissions = rolesAndPermissions.permissions;
     roles = rolesAndPermissions.roles;
 
     // find and check token on database
-    const check = await DB.token.findFirstOrThrow({
-      where: {
-        id: payload.token_id,
-        is_blacklist: false,
-      },
-    });
+    const check = await findFirstOrThrow(tokenId);
     if (!check.ip) {
-      await DB.token.update({
-        where: {
-          id: tokenId,
-        },
-        data: {
-          ip: clientIp,
-        },
+      await update(payload.token_id, {
+        ip: clientIp,
       });
     }
   } catch (error) {

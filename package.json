@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "seed": "bun run src/database/seeders/init.ts",
-    "start": "bun run index.ts"
+    "start": "bun run index.ts",
+    "compile": "bun build ./index.ts --compile --outfile=./compiled/run-compiled"
   },
   "devDependencies": {
     "@types/bun": "latest",

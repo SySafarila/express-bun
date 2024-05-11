@@ -2,6 +2,10 @@
   "name": "mybun",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "seed": "bun run src/database/seeders/init.ts",
+    "start": "bun run index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/cors": "^2.8.17",

@@ -1,7 +1,7 @@
 import { store } from "../../models/user";
 import DB from "../../utils/database";
 
-export const seedInit = async () => {
+const seedInit = async () => {
   const user = await store({
     full_name: "Super Admin",
     email: "super.admin@admin.com",
@@ -59,3 +59,5 @@ export const seedInit = async () => {
     },
   });
 };
+
+await seedInit();

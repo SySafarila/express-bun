@@ -2,7 +2,6 @@ import { $ } from "bun";
 import { describe, expect, it } from "bun:test";
 import supertest from "supertest";
 import { app } from "../index";
-import { seedInit } from "../src/database/seeders/init";
 
 let testToken =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTE2MjM5MDIyfQ.wWIr5eSkGvY44wLb5JEs10CxPBnqWp4F1ns7zh8Qpes";
@@ -14,7 +13,7 @@ describe("Authentication", () => {
       Bun.env.RESET_DATABASE_ON_TEST === "true"
     ) {
       await $`bunx prisma migrate reset -f`;
-      await seedInit();
+      await $`bun run seed`;
     }
 
     const response = await supertest(app).post("/auth/register").send({

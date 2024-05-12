@@ -44,16 +44,13 @@ export const getRolesAndPermissions = async (
     where: {
       id: user_id,
     },
-    include: {
+    select: {
       roles: {
-        include: {
-          role: {
-            include: {
-              permissions: {
-                include: {
-                  permission: true,
-                },
-              },
+        select: {
+          name: true,
+          permissions: {
+            select: {
+              name: true,
             },
           },
         },
@@ -62,9 +59,9 @@ export const getRolesAndPermissions = async (
   });
 
   rolesAndPermissions.roles.forEach((role) => {
-    roles.push(role.role.name);
-    role.role.permissions.forEach((permission) => {
-      permissions.push(permission.permission.name);
+    roles.push(role.name);
+    role.permissions.forEach((permission) => {
+      permissions.push(permission.name);
     });
   });
 

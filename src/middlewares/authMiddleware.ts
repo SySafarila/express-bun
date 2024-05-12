@@ -15,10 +15,6 @@ const authMiddleware = async (
   res: AuthRespnose,
   next: NextFunction
 ) => {
-  let token: string;
-  let tokenId: number;
-  let permissions: Array<string> = [];
-  let roles: Array<string> = [];
   const clientIp = req.ip;
   const { authorization } = req.headers;
 
@@ -29,22 +25,26 @@ const authMiddleware = async (
   }
 
   try {
-    token = authorization?.split("Bearer ")[1];
-    const payload = verifyJwt(token) as JwtPayloadType;
-    tokenId = payload.token_id;
+    const token = authorization?.split("Bearer ")[1];
+    const { token_id, user_id } = verifyJwt(token) as JwtPayloadType;
 
     // get roles and permissions
-    const rolesAndPermissions = await getRolesAndPermissions(payload.user_id);
-    permissions = rolesAndPermissions.permissions;
-    roles = rolesAndPermissions.roles;
+    const rolesAndPermissions = await getRolesAndPermissions(user_id);
+    const { permissions, roles } = rolesAndPermissions;
 
     // find and check token on database
-    const check = await findFirstOrThrow(tokenId);
+    const check = await findFirstOrThrow(token_id);
     if (!check.ip) {
-      await update(payload.token_id, {
+      await update(token_id, {
         ip: clientIp,
       });
     }
+
+    res.locals.tokenId = token_id;
+    res.locals.permissions = permissions;
+    res.locals.roles = roles;
+
+    return next();
   } catch (error) {
     let message: string = "Bearer token invalid.";
 
@@ -62,12 +62,6 @@ const authMiddleware = async (
       message: message,
     });
   }
-
-  res.locals.tokenId = tokenId;
-  res.locals.permissions = permissions;
-  res.locals.roles = roles;
-
-  next();
 };
 
 export default authMiddleware;

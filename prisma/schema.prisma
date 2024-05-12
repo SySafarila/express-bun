@@ -14,15 +14,15 @@ datasource db {
 }
 
 model User {
-  id          Int           @id @default(autoincrement())
-  full_name   String        @db.VarChar(255)
-  email       String        @unique @db.VarChar(255)
-  password    String        @db.VarChar(255)
-  created_at  DateTime      @default(now())
-  updated_at  DateTime      @default(now())
+  id          Int       @id @default(autoincrement())
+  full_name   String    @db.VarChar(255)
+  email       String    @unique @db.VarChar(255)
+  password    String    @db.VarChar(255)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @default(now())
   verified_at DateTime?
   tokens      Token[]
-  roles       UserHasRole[]
+  roles       Role[]
 
   @@map("users")
 }
@@ -42,46 +42,22 @@ model Token {
 }
 
 model Role {
-  id          Int                 @id @default(autoincrement())
-  name        String              @unique @db.VarChar(255)
-  created_at  DateTime            @default(now())
-  updated_at  DateTime            @default(now())
-  users       UserHasRole[]
-  permissions RoleHasPermission[]
+  id          Int          @id @default(autoincrement())
+  name        String       @unique @db.VarChar(255)
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @default(now())
+  permissions Permission[]
+  users       User[]
 
   @@map("roles")
 }
 
 model Permission {
-  id         Int                 @id @default(autoincrement())
-  name       String              @unique @db.VarChar(255)
-  created_at DateTime            @default(now())
-  updated_at DateTime            @default(now())
-  roles      RoleHasPermission[]
-
-  @@map("permissions")
-}
-
-model UserHasRole {
   id         Int      @id @default(autoincrement())
-  user_id    Int
-  role_id    Int
+  name       String   @unique @db.VarChar(255)
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  role       Role     @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  roles      Role[]
 
-  @@map("user_has_roles")
-}
-
-model RoleHasPermission {
-  id            Int        @id @default(autoincrement())
-  role_id       Int
-  permission_id Int
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @default(now())
-  role          Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
-  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
-
-  @@map("role_has_permissions")
+  @@map("permissions")
 }

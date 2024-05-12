@@ -70,3 +70,44 @@ export const getRolesAndPermissions = async (
     permissions,
   };
 };
+
+export const synchRoles = async (user_id: number, _roles: Array<number>) => {
+  const roles = _roles.map((n) => ({ ["id"]: n }));
+
+  return await DB.$transaction(async (trx) => {
+    await DB.user.update({
+      where: {
+        id: user_id,
+      },
+      include: {
+        roles: true,
+      },
+      data: {
+        roles: {
+          set: [],
+        },
+      },
+    });
+
+    return await DB.user.update({
+      where: {
+        id: user_id,
+      },
+      data: {
+        roles: {
+          connect: roles,
+        },
+      },
+      select: {
+        id: true,
+        full_name: true,
+        roles: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  });
+};

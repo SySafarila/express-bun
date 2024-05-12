@@ -24,6 +24,18 @@ const seedInit = async () => {
           {
             name: "roles-delete",
           },
+          {
+            name: "users-create",
+          },
+          {
+            name: "users-read",
+          },
+          {
+            name: "users-update",
+          },
+          {
+            name: "users-delete",
+          },
         ],
       },
       users: {

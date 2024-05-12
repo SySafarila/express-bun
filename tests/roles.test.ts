@@ -18,7 +18,7 @@ describe("Roles", () => {
     const response200 = await supertest(app)
       .post("/admin/roles")
       .send({
-        name: "super admin test",
+        name: "super-admin-test",
       })
       .set("Authorization", `Bearer ${testToken}`);
 
@@ -26,7 +26,7 @@ describe("Roles", () => {
     const response400 = await supertest(app)
       .post("/admin/roles")
       .send({
-        name: "super admin test",
+        name: "super-admin-test",
       })
       .set("Authorization", `Bearer ${testToken}`);
 
@@ -45,8 +45,8 @@ describe("Roles", () => {
     const response200 = await supertest(app)
       .patch("/admin/roles")
       .send({
-        name: "super admin test update",
-        id: 1,
+        name: "super-admin-test-update",
+        id: 2,
       })
       .set("Authorization", `Bearer ${testToken}`);
 
@@ -57,7 +57,7 @@ describe("Roles", () => {
     const response200 = await supertest(app)
       .delete("/admin/roles")
       .send({
-        id: 1,
+        id: 2,
       })
       .set("Authorization", `Bearer ${testToken}`);
 

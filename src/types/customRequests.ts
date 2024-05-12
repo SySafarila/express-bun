@@ -23,3 +23,8 @@ export type RoleUpdate = {
 export type RoleDelete = {
   id: number;
 };
+
+export type UserSynchRoles = {
+  user_id: number;
+  roles: Array<number>;
+};

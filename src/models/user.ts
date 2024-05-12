@@ -37,8 +37,8 @@ export const getCurrentUser = async (tokenId: number): Promise<UserPublic> => {
 export const getRolesAndPermissions = async (
   user_id: number
 ): Promise<{ roles: Array<string>; permissions: Array<string> }> => {
-  let roles: Array<string> = [];
-  let permissions: Array<string> = [];
+  const roles: Array<string> = [];
+  const permissions: Array<string> = [];
 
   const rolesAndPermissions = await DB.user.findFirstOrThrow({
     where: {
